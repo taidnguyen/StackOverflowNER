@@ -15,7 +15,6 @@
 # limitations under the License.
 """ Fine-tuning the library models for named entity recognition on CoNLL-2003 (Bert or Roberta). """
 
-
 import argparse
 import glob
 import logging
@@ -24,7 +23,6 @@ import random
 
 import numpy as np
 import torch
-
 
 from seqeval.metrics import f1_score, precision_score, recall_score
 from torch.nn import CrossEntropyLoss
@@ -43,12 +41,10 @@ from transformers import (
 )
 from utils_ner import convert_examples_to_features, get_labels, read_examples_from_file
 
-
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
     from tensorboardX import SummaryWriter
-
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +54,7 @@ MODEL_TYPES = tuple(conf.model_type for conf in MODEL_CONFIG_CLASSES)
 ALL_MODELS = sum((tuple(conf.pretrained_config_archive_map.keys()) for conf in MODEL_CONFIG_CLASSES), ())
 
 TOKENIZER_ARGS = ["do_lower_case", "strip_accents", "keep_accents", "use_fast"]
+
 
 def set_seed(args):
     random.seed(args.seed)
@@ -98,7 +95,7 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
 
     # Check if saved optimizer or scheduler states exist
     if os.path.isfile(os.path.join(args.model_name_or_path, "optimizer.pt")) and os.path.isfile(
-        os.path.join(args.model_name_or_path, "scheduler.pt")
+            os.path.join(args.model_name_or_path, "scheduler.pt")
     ):
         # Load in optimizer and scheduler states
         optimizer.load_state_dict(torch.load(os.path.join(args.model_name_or_path, "optimizer.pt")))
@@ -125,7 +122,6 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
     # logger.info("***** Running training *****")
     # logger.info("  Num Epochs = %d", args.num_train_epochs)
     # logger.info("  Instantaneous batch size per GPU = %d", args.per_gpu_train_batch_size)
-    
 
     global_step = 0
     epochs_trained = 0
@@ -162,7 +158,8 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
 
             model.train()
             batch = tuple(t.to(args.device) for t in batch)
-            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4], "labels_seg": batch[5]}
+            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4],
+                      "labels_seg": batch[5]}
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = (
                     batch[2] if args.model_type in ["bert", "xlnet"] else None
@@ -197,7 +194,7 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
                 if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
                     # Log metrics
                     if (
-                        args.local_rank == -1 and args.evaluate_during_training
+                            args.local_rank == -1 and args.evaluate_during_training
                     ):  # Only evaluate when single GPU otherwise metrics may not average well
                         results, _ = evaluate(args, model, tokenizer, labels, pad_token_label_id, mode="dev")
                         for key, value in results.items():
@@ -260,7 +257,8 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
         batch = tuple(t.to(args.device) for t in batch)
 
         with torch.no_grad():
-            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4], "labels_seg": batch[5]}
+            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4],
+                      "labels_seg": batch[5]}
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = (
                     batch[2] if args.model_type in ["bert", "xlnet"] else None
@@ -300,8 +298,6 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
         "f1": f1_score(out_label_list, preds_list),
     }
 
-    
-
     # logger.info("***** Eval results %s *****", prefix)
     # for key in sorted(results.keys()):
     #     logger.info("  %s = %s", key, str(results[key]))
@@ -320,7 +316,7 @@ def load_and_cache_examples(args, tokenizer, labels, pad_token_label_id, mode, p
             mode, list(filter(None, args.model_name_or_path.split("/"))).pop(), str(args.max_seq_length)
         ),
     )
-    
+
     examples = read_examples_from_file(args.data_dir, mode, path)
     features = convert_examples_to_features(
         examples,
@@ -352,9 +348,9 @@ def load_and_cache_examples(args, tokenizer, labels, pad_token_label_id, mode, p
     all_label_ids_ctc = torch.tensor([f.label_ids_ctc for f in features], dtype=torch.long)
     all_label_ids_seg = torch.tensor([f.label_ids_seg for f in features], dtype=torch.long)
 
-    dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids, all_label_ids_ctc, all_label_ids_seg)
+    dataset = TensorDataset(all_input_ids, all_input_mask, all_segment_ids, all_label_ids, all_label_ids_ctc,
+                            all_label_ids_seg)
     return dataset
-
 
 
 def parse_args():
@@ -426,7 +422,7 @@ def parse_args():
         default=128,
         type=int,
         help="The maximum total input sequence length after tokenization. Sequences longer "
-        "than this will be truncated, sequences shorter will be padded.",
+             "than this will be truncated, sequences shorter will be padded.",
     )
     parser.add_argument("--do_train", action="store_true", help="Whether to run training.")
     parser.add_argument("--do_eval", action="store_true", help="Whether to run eval on the dev set.")
@@ -497,7 +493,7 @@ def parse_args():
         type=str,
         default="O1",
         help="For fp16: Apex AMP optimization level selected in ['O0', 'O1', 'O2', and 'O3']."
-        "See details at https://nvidia.github.io/apex/amp.html",
+             "See details at https://nvidia.github.io/apex/amp.html",
     )
     parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
     parser.add_argument("--server_ip", type=str, default="", help="For distant debugging.")
@@ -505,10 +501,10 @@ def parse_args():
     args, unknown = parser.parse_known_args()
 
     if (
-        os.path.exists(args.output_dir)
-        and os.listdir(args.output_dir)
-        and args.do_train
-        and not args.overwrite_output_dir
+            os.path.exists(args.output_dir)
+            and os.listdir(args.output_dir)
+            and args.do_train
+            and not args.overwrite_output_dir
     ):
         raise ValueError(
             "Output directory ({}) already exists and is not empty. Use --overwrite_output_dir to overcome.".format(
@@ -524,17 +520,13 @@ def parse_args():
         print("Waiting for debugger attach")
         ptvsd.enable_attach(address=(args.server_ip, args.server_port), redirect_output=True)
         ptvsd.wait_for_attach()
-    
-
 
     return args
 
 
-
-
-def predict_entities(input_file,output_prediction_file):
+def predict_entities(input_file, output_prediction_file):
     args = parse_args()
-    
+
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1 or args.no_cuda:
         device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
@@ -546,7 +538,6 @@ def predict_entities(input_file,output_prediction_file):
         args.n_gpu = 1
     args.device = device
 
-    
     args.do_eval = True
     args.do_predict = True
 
@@ -593,7 +584,8 @@ def predict_entities(input_file,output_prediction_file):
     #     cache_dir=args.cache_dir if args.cache_dir else None,
     #     **tokenizer_args,
     # )
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,cache_dir=args.cache_dir if args.cache_dir else None,**tokenizer_args)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,
+                                              cache_dir=args.cache_dir if args.cache_dir else None, **tokenizer_args)
     model = AutoModelForTokenClassification_Soft_NER.from_pretrained(
         args.model_name_or_path,
         from_tf=bool(".ckpt" in args.model_name_or_path),
@@ -608,8 +600,6 @@ def predict_entities(input_file,output_prediction_file):
 
     logger.info("Parameters %s", args)
 
-    
-
     # Evaluation
     # Save results on test
 
@@ -617,8 +607,7 @@ def predict_entities(input_file,output_prediction_file):
     model = AutoModelForTokenClassification_Soft_NER.from_pretrained(args.output_dir)
     model.to(args.device)
 
-
-    result, predictions = evaluate(args, model, tokenizer, labels, pad_token_label_id, mode="", path=input_file )
+    result, predictions = evaluate(args, model, tokenizer, labels, pad_token_label_id, mode="", path=input_file)
 
     # # Save results on test
     output_test_results_file = os.path.join("/content/drive/MyDrive/StackOverflowNER/test_results.txt")
@@ -645,7 +634,7 @@ def predict_entities(input_file,output_prediction_file):
 
     print("\n\n")
     print("-------------------------------------------------------------------------------------------------")
-    print("***** Perdictions on sentences is stored at ", output_prediction_file,"*****" )
+    print("***** Predictions on sentences is stored at ", output_prediction_file, "*****")
     print("-------------------------------------------------------------------------------------------------")
     print("\n\n")
 
@@ -655,18 +644,9 @@ def predict_entities(input_file,output_prediction_file):
     #     return None
 
 
-    
-
-    
-    
-    
-
-    
-
-
 if __name__ == "__main__":
     args = parse_args()
-    input_file=args.input_file_for_ner
-    output_prediction_file=args.output_file_for_ner
+    input_file = args.input_file_for_ner
+    output_prediction_file = args.output_file_for_ner
 
     predict_entities(input_file, output_prediction_file)

@@ -1,15 +1,13 @@
-# Dataset and Model for Fine-grained Software Entity Extraction
+# Replicating SoftNER Model
+Colab Notebook to run the model:
 
-This repository contains all the code and data proposed in the paper:  **Code and Named Entity Recognition in  StackOverflow. (ACL 2020)**.  [[Paper PDF](https://arxiv.org/pdf/2005.01634.pdf)]
+Data: https://drive.google.com/drive/folders/1fqIRE5ZIL3bol79OiTfqJxFlMOslHHB7?usp=sharing
 
-Checkout a demo of our work here [http://sdl898-ritter2.cse.ohio-state.edu:8923/#](http://sdl898-ritter2.cse.ohio-state.edu:8923/#)
-
-For the source code of our NER tagger, check the `code/NER/` folder.
-
-For our annotated data with software-domain named entities, check the `resources/annotated_ner_data/` folder.
+Original paper: *Code and Named Entity Recognition in  StackOverflow (ACL 2020)*.
+- [Paper](https://arxiv.org/pdf/2005.01634.pdf)
+- Their source code: https://github.com/jeniyat/StackOverflowNER
 
 To cite the data or the code included in this repository, please use the following bibtex entry:
-
 
       @inproceedings{Tabassum20acl,
           title = {Code and Named Entity Recognition in StackOverflow},
