@@ -1,11 +1,14 @@
 # Replicating SoftNER Model
-Colab Notebook to run the model:
+Colab Notebook to run the model: https://colab.research.google.com/drive/1k9wkHXO4saHHqNh1Usx8EbxNLRLuvbCR?usp=sharing
 
-Data: https://drive.google.com/drive/folders/1fqIRE5ZIL3bol79OiTfqJxFlMOslHHB7?usp=sharing
+Data reuploaded: https://drive.google.com/drive/folders/1fqIRE5ZIL3bol79OiTfqJxFlMOslHHB7?usp=sharing
 
-Original paper: *Code and Named Entity Recognition in  StackOverflow (ACL 2020)*.
-- [Paper](https://arxiv.org/pdf/2005.01634.pdf)
-- Their source code: https://github.com/jeniyat/StackOverflowNER
+Please contact if you have any issues.
+
+### Original Work
+Title: **Code and Named Entity Recognition in  StackOverflow (ACL 2020)**.
+- Original [paper](https://arxiv.org/pdf/2005.01634.pdf)
+- Their [source code](https://github.com/jeniyat/StackOverflowNER)
 
 To cite the data or the code included in this repository, please use the following bibtex entry:
 
