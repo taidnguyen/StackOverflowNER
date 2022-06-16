@@ -108,7 +108,7 @@ def convert_examples_to_features(
 
     label_map = {label: i for i, label in enumerate(label_list)}
     word_to_id = json.load(open("word_to_id.json","r"))
-    word_id_pad = word_to_id["***PADDING***"]
+    word_id_pad = word_to_id["**PAD**"]
 
     # print("*********************************")
     # print(label_map)
@@ -132,7 +132,7 @@ def convert_examples_to_features(
             word_tokens = tokenizer.tokenize(word)
 
             if word not in word_to_id:
-                word_id=word_to_id["UNK"]
+                word_id=word_to_id["**UNK**"]
             else:
                 word_id = word_to_id[word]
 

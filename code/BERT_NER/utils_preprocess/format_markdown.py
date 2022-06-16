@@ -7,7 +7,7 @@ import os
 #import lxml.etree.ElementTree as ET
 import nltk
 import os
-from xmlr import xmliter
+#from xmlr import xmliter
 import re
 
 from bs4 import BeautifulSoup

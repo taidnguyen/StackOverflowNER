@@ -200,7 +200,7 @@ if __name__ == '__main__':
 	args = parse_args()
 	input_file = args.input_file_with_so_body
 
-	input_file = "xml_filted_body.txt"
+# 	input_file = "xml_filted_body.txt"
 
 
 	Extract_NER(input_file)

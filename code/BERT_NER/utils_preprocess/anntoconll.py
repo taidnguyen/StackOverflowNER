@@ -369,7 +369,7 @@ def convert_standoff_to_conll(source_directory_ann, output_directory_conll):
     argv = sys.argv
 
     
-    options = argparser().parse_args(argv[1:])
+    options, unknown = argparser().parse_known_args(argv[1:])
 
 
     # print(options)

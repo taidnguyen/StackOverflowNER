@@ -358,12 +358,13 @@ def load_and_cache_examples(args, tokenizer, labels, pad_token_label_id, mode, p
 
 
 def parse_args():
+    cwd = '/content/drive/MyDrive/StackOverflowNER/StackOverflowNER/code/BERT_NER'
     parser = argparse.ArgumentParser()
 
     # Required parameters
     parser.add_argument(
         "--input_file_for_ner",
-        default='./utils_fine_tune/dev.txt',
+        default=os.path.join(cwd, 'utils_fine_tune', 'ip_ner', 'dev.txt'),
         type=str,
     )
 
@@ -375,7 +376,7 @@ def parse_args():
 
     parser.add_argument(
         "--data_dir",
-        default='./utils_fine_tune/ip_ner/',
+        default=os.path.join(cwd, 'utils_fine_tune', 'ip_ner', ''),
         type=str,
         help="The input data dir. Should contain the training files for the CoNLL-2003 NER task.",
     )
@@ -387,13 +388,15 @@ def parse_args():
     )
     parser.add_argument(
         "--model_name_or_path",
-        default='./utils_fine_tune/word_piece_ner/',
+        default=os.path.join(cwd, 'utils_fine_tune', 'word_piece_ner', ''),
+        # default=os.path.join('jeniya/BERTOverflow'),
         type=str,
         help="Path to pre-trained model or shortcut name selected in the list: " + ", ".join(ALL_MODELS),
     )
     parser.add_argument(
         "--output_dir",
-        default='./utils_fine_tune/bert-word-piece-softner/',
+        default=os.path.join(cwd, 'utils_fine_tune', 'bert-word-piece-softner', ''),
+        # default=os.path.join('jeniya/BERTOverflow'),
         type=str,
         help="The output directory where the model predictions and checkpoints will be written.",
     )
@@ -401,7 +404,7 @@ def parse_args():
     # Other parameters
     parser.add_argument(
         "--labels",
-        default="./utils_fine_tune/labels_so.txt",
+        default=os.path.join(cwd, 'utils_fine_tune', 'labels_so.txt'),
         type=str,
         help="Path to a file containing all labels. If not specified, CoNLL-2003 labels are used.",
     )
@@ -416,7 +419,7 @@ def parse_args():
     )
     parser.add_argument(
         "--cache_dir",
-        default="",
+        default=os.path.join(cwd, 'utils_fine_tune', 'bert-word-piece-softner', ''),
         type=str,
         help="Where do you want to store the pre-trained models downloaded from s3",
     )
@@ -501,7 +504,7 @@ def parse_args():
     parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
     parser.add_argument("--server_ip", type=str, default="", help="For distant debugging.")
     parser.add_argument("--server_port", type=str, default="", help="For distant debugging.")
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     if (
         os.path.exists(args.output_dir)
@@ -618,9 +621,9 @@ def predict_entities(input_file,output_prediction_file):
 
 
     result, predictions = evaluate(args, model, tokenizer, labels, pad_token_label_id, mode="", path=input_file )
-    # print(len(predictions[0]))
-    # Save results on test
-    output_test_results_file = os.path.join(args.output_dir, "test_results.txt")
+
+    # # Save results on test
+    output_test_results_file = os.path.join("/content/drive/MyDrive/StackOverflowNER/test_results.txt")
     with open(output_test_results_file, "w") as writer:
         for key in sorted(result.keys()):
             writer.write("{} = {}\n".format(key, str(result[key])))
@@ -639,7 +642,7 @@ def predict_entities(input_file,output_prediction_file):
                     output_line = line.split()[0] + " " + predictions[example_id].pop(0) + "\n"
                     writer.write(output_line)
                 else:
-                    # logger.warning("Maximum sequence length exceeded: No prediction for '%s'.", line.split()[0])
+                    logger.warning("Maximum sequence length exceeded: No prediction for '%s'.", line.split()[0])
                     continue
 
     print("\n\n")
@@ -647,6 +650,12 @@ def predict_entities(input_file,output_prediction_file):
     print("***** Perdictions on sentences is stored at ", output_prediction_file,"*****" )
     print("-------------------------------------------------------------------------------------------------")
     print("\n\n")
+
+    # example_id = 0
+    # for line in f:
+    #   if predictions[example_id].pop(0) != 'O':
+    #     return None
+
 
     
 

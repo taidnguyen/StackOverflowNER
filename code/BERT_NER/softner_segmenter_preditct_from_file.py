@@ -67,6 +67,7 @@ def set_seed(args):
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
     if args.n_gpu > 0:
+        print(f"Found {args.n_gpu} GPUs")
         torch.cuda.manual_seed_all(args.seed)
 
 
@@ -264,6 +265,7 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
 
         with torch.no_grad():
             inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4], "labels_md": batch[5], "freq_ids": batch[6]}
+                        
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = (
                     batch[2] if args.model_type in ["bert", "xlnet"] else None
@@ -296,7 +298,7 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
             if out_label_ids[i, j] != pad_token_label_id:
                 out_label_list[i].append(label_map[out_label_ids[i][j]])
                 preds_list[i].append(label_map[preds[i][j]])
-
+    
     results = {
         "precision": precision_score(out_label_list, preds_list),
         "recall": recall_score(out_label_list, preds_list),
@@ -315,6 +317,8 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
     # logger.info("***** Mode %s *****", mode)
     # for key in sorted(results.keys()):
     #     logger.info("  %s = %s", key, str(results[key]))
+    ######################
+
 
     return results, preds_list
 
@@ -377,17 +381,19 @@ def load_and_cache_examples(args, tokenizer, labels, pad_token_label_id, mode, p
 
 
 def parse_args():
+    #cwd = os.getcwd()
+    cwd = '/content/drive/MyDrive/StackOverflowNER/StackOverflowNER/code/BERT_NER'
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
         "--input_file_for_segmenter",
-        default='./utils_fine_tune/ip_seg/dev.txt',
+        default=os.path.join(cwd, 'utils_fine_tune', 'ip_seg', 'dev.txt'),
         type=str,
     )
 
     parser.add_argument(
         "--output_file_for_segmenter",
-        default='segemeter_preds.txt',
+        default=os.path.join(cwd, '/../segmenter_preds.txt'),
         type=str,
     )
 
@@ -396,7 +402,7 @@ def parse_args():
 
     parser.add_argument(
         "--data_dir",
-        default='./utils_fine_tune/ip_seg/',
+        default=os.path.join(cwd,'utils_fine_tune', 'ip_seg', ''),
         type=str,
         help="The input data dir. Should contain the training files for the CoNLL-2003 NER task.",
     )
@@ -408,13 +414,14 @@ def parse_args():
     )
     parser.add_argument(
         "--model_name_or_path",
-        default='./utils_fine_tune/word_piece_seg/',
+        default=os.path.join(cwd, 'utils_fine_tune', 'word_piece_seg', ''),
+        # default=os.path.join('jeniya/BERTOverflow'),
         type=str,
         help="Path to pre-trained model or shortcut name selected in the list: " + ", ".join(ALL_MODELS),
     )
     parser.add_argument(
         "--output_dir",
-        default='./utils_fine_tune/bert-word-piece-seg/',
+        default=os.path.join(cwd, 'utils_fine_tune', 'bert-word-piece-seg', ''),
         type=str,
         help="The output directory where the model predictions and checkpoints will be written.",
     )
@@ -422,7 +429,8 @@ def parse_args():
     # Other parameters
     parser.add_argument(
         "--labels",
-        default='./utils_fine_tune/labels_seg.txt',
+        default=os.path.join(cwd, 'utils_fine_tune', 'labels_seg.txt'), # Changed from labels_seg.txt to labels_so.txt
+        # default=os.path.join(cwd, 'utils_fine_tune', 'labels_so.txt'), # Changed from labels_seg.txt to labels_so.txt
         type=str,
         help="Path to a file containing all labels. If not specified, CoNLL-2003 labels are used.",
     )
@@ -437,6 +445,8 @@ def parse_args():
     )
     parser.add_argument(
         "--cache_dir",
+        # default="/content/drive/MyDrive/StackOverflowNER/",
+        # default=os.path.join(cwd, 'utils_fine_tune', 'bert-word-piece-seg', ''),
         default="",
         type=str,
         help="Where do you want to store the pre-trained models downloaded from s3",
@@ -522,19 +532,19 @@ def parse_args():
     parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
     parser.add_argument("--server_ip", type=str, default="", help="For distant debugging.")
     parser.add_argument("--server_port", type=str, default="", help="For distant debugging.")
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
-    # if (
-    #     os.path.exists(args.output_dir)
-    #     and os.listdir(args.output_dir)
-    #     and args.do_train
-    #     and not args.overwrite_output_dir
-    # ):
-    #     raise ValueError(
-    #         "Output directory ({}) already exists and is not empty. Use --overwrite_output_dir to overcome.".format(
-    #             args.output_dir
-    #         )
-    #     )
+    if (
+        os.path.exists(args.output_dir)
+        and os.listdir(args.output_dir)
+        and args.do_train
+        and not args.overwrite_output_dir
+    ):
+        raise ValueError(
+            "Output directory ({}) already exists and is not empty. Use --overwrite_output_dir to overcome.".format(
+                args.output_dir
+            )
+        )
 
     # Setup distant debugging if needed
     if args.server_ip and args.server_port:

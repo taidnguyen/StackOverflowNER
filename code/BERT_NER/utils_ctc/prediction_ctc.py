@@ -27,19 +27,19 @@ from collections import Counter
 from torch.optim import lr_scheduler
 
 
-fasttext_model = fasttext.load_model('/data/jeniya/STACKOVERFLOW_DATA/POST_PROCESSED/fasttext_model/fasttext.bin')
+fasttext_model = fasttext.load_model('/content/drive/MyDrive/StackOverflowNER/fasttext.bin')
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 if device=='cuda':
     torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 RESOURCES = {
-    "train": "/data/jeniya/STACKOVERFLOW_DATA/CTC/data/train_freq.txt",
-    "gigaword_word": "/data/jeniya/STACKOVERFLOW_DATA/CTC/data/gigaword_gt_2.bin",
-    "gigaword_char": "/data/jeniya/STACKOVERFLOW_DATA/CTC/data/gigaword_char_unique.bin",
-    "stackoverflow_char": "/data/jeniya/STACKOVERFLOW_DATA/CTC/data/no_eng_char_uniq.bin",
-    "stackoverflow_word": "/data/jeniya/STACKOVERFLOW_DATA/CTC/data/words.bin",
-    "cs": "/data/jeniya/STACKOVERFLOW_DATA/CTC/data/sorted_semantic_scholar_words.txt"
+    "train": "/content/drive/MyDrive/StackOverflowNER/data_ctc/train_freq.txt",
+    "gigaword_word": "/content/drive/MyDrive/StackOverflowNER/data_ctc/gigaword_gt_2.bin",
+    "gigaword_char": "/content/drive/MyDrive/StackOverflowNER/data_ctc/gigaword_char_unique.bin",
+    "stackoverflow_char": "/content/drive/MyDrive/StackOverflowNER/data_ctc/no_eng_char_uniq.bin",
+    "stackoverflow_word": "/content/drive/MyDrive/StackOverflowNER/data_ctc/words.bin",
+    "cs": "/content/drive/MyDrive/StackOverflowNER/data_ctc/sorted_semantic_scholar_words.txt"
 }
 
 def eval(predictions, gold_labels, phase):
@@ -60,7 +60,21 @@ def get_word_dict_pre_embeds(train_file, test_file):
     id_to_word={}
     word_to_id={}
     word_to_vec={}
-
+    # ZENYA03 ADDED
+    # word="**UNK**" # Unknown token
+    
+    # word_to_id[word]=word_id
+    # id_to_word[word_id]=word
+    # word_to_vec[word]=fasttext_model[word]
+    # word_id+=1
+    
+    # word="**PAD**" # Padding token
+    
+    # word_to_id[word]=word_id
+    # id_to_word[word_id]=word
+    # word_to_vec[word]=fasttext_model[word]
+    # word_id+=1
+    
     for line in open(train_file):
         word=line.split()[0]
         if word not in word_to_id:
@@ -153,8 +167,8 @@ def prediction_on_token_input(ctc_ip_token, ctc_classifier, vocab_size, word_to_
     
     ctc_scores, ctc_preds = ctc_classifier(ctc_features, ctc_x_words)
     preds=[]
-    # fp = open("ctc_ops.tsv", "w")
-    # fp.write("token"+"\t"+"true_label"+"\t"+"pred_label"+"\t"+"scores"+"\n")
+    fp = open("ctc_ops.tsv", "w")
+    fp.write("token"+"\t"+"true_label"+"\t"+"pred_label"+"\t"+"scores"+"\n")
     for tok, gold, pred, sc in zip(ctc_tokens, ctc_labels, ctc_preds, ctc_scores):
         if rules.IS_NUMBER(tok):
             pred=1
@@ -199,7 +213,7 @@ def prediction_on_file_input(ctc_input_file, ctc_classifier, vocab_size, word_to
         if rules.IS_URL(tok):
             pred=0
         if pred==1:
-            # print(tok, pred)
+            print(tok, pred)
             pred=1
         preds.append(pred)
 
@@ -271,7 +285,7 @@ def train_ctc_model(train_file, test_file):
         
 
         test_scores, test_preds = ctc_classifier(test_features, test_x_words)
-        # eval(test_preds, test_labels, "test")
+        # eval(test_preds, test_labels, "test") # TAI edit
 
     return ctc_classifier, vocab_size, word_to_id, id_to_word, word_to_vec, features
 
@@ -296,8 +310,8 @@ if __name__ == '__main__':
     train_file=parameters_ctc['train_file']
     test_file=parameters_ctc['test_file']
 
-    ctc_classifier, vocab_size, word_to_id, id_to_word, word_to_vec, features= train_model(train_file, test_file)
-    
+    ctc_classifier, vocab_size, word_to_id, id_to_word, word_to_vec, features= train_ctc_model(train_file, test_file)
+    print(word_to_id)
     ip_token = "app"
     op_ctc = prediction_on_token_input(ip_token, ctc_classifier, vocab_size, word_to_id, id_to_word, word_to_vec, features)
     print(op_ctc)

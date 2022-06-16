@@ -1,10 +1,10 @@
 parameters_ctc = {}
 
 
+parameters_ctc['RESOURCES_base_directory'] = "/content/drive/MyDrive/StackOverflowNER/data_ctc"
 
-
-parameters_ctc['train_file']="/data/jeniya/STACKOVERFLOW_DATA/CTC/data/train_updated.tsv"
-parameters_ctc['test_file']="/data/jeniya/STACKOVERFLOW_DATA/CTC/data/test_updated.tsv"
+parameters_ctc['train_file']="/content/drive/MyDrive/StackOverflowNER/data_ctc/train_updated.tsv"
+parameters_ctc['test_file']="/content/drive/MyDrive/StackOverflowNER/data_ctc/test_updated.tsv"
 
 
 parameters_ctc['LR']=0.0015
