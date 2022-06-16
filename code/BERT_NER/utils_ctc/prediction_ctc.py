@@ -285,7 +285,7 @@ def train_ctc_model(train_file, test_file):
         
 
         test_scores, test_preds = ctc_classifier(test_features, test_x_words)
-        # eval(test_preds, test_labels, "test") # TAI edit
+        # eval(test_preds, test_labels, "test")
 
     return ctc_classifier, vocab_size, word_to_id, id_to_word, word_to_vec, features
 

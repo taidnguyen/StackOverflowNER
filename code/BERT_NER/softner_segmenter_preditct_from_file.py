@@ -15,7 +15,6 @@
 # limitations under the License.
 """ Fine-tuning the library models for named entity recognition on CoNLL-2003 (Bert or Roberta). """
 
-
 import argparse
 import glob
 import logging
@@ -24,7 +23,6 @@ import random
 
 import numpy as np
 import torch
-
 
 from seqeval.metrics import f1_score, precision_score, recall_score
 from torch.nn import CrossEntropyLoss
@@ -45,12 +43,10 @@ from transformers import (
 )
 from utils_seg import convert_examples_to_features, get_labels, read_examples_from_file
 
-
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
     from tensorboardX import SummaryWriter
-
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +98,7 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
 
     # Check if saved optimizer or scheduler states exist
     if os.path.isfile(os.path.join(args.model_name_or_path, "optimizer.pt")) and os.path.isfile(
-        os.path.join(args.model_name_or_path, "scheduler.pt")
+            os.path.join(args.model_name_or_path, "scheduler.pt")
     ):
         # Load in optimizer and scheduler states
         optimizer.load_state_dict(torch.load(os.path.join(args.model_name_or_path, "optimizer.pt")))
@@ -129,7 +125,6 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
     # logger.info("***** Running training *****")
     # logger.info("  Num Epochs = %d", args.num_train_epochs)
     # logger.info("  Instantaneous batch size per GPU = %d", args.per_gpu_train_batch_size)
-    
 
     global_step = 0
     epochs_trained = 0
@@ -166,7 +161,8 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
 
             model.train()
             batch = tuple(t.to(args.device) for t in batch)
-            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4], "labels_md": batch[5], "freq_ids": batch[6]}
+            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4],
+                      "labels_md": batch[5], "freq_ids": batch[6]}
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = (
                     batch[2] if args.model_type in ["bert", "xlnet"] else None
@@ -201,7 +197,7 @@ def train(args, train_dataset, model, tokenizer, labels, pad_token_label_id):
                 if args.local_rank in [-1, 0] and args.logging_steps > 0 and global_step % args.logging_steps == 0:
                     # Log metrics
                     if (
-                        args.local_rank == -1 and args.evaluate_during_training
+                            args.local_rank == -1 and args.evaluate_during_training
                     ):  # Only evaluate when single GPU otherwise metrics may not average well
                         results, _ = evaluate(args, model, tokenizer, labels, pad_token_label_id, mode="dev")
                         for key, value in results.items():
@@ -264,8 +260,9 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
         batch = tuple(t.to(args.device) for t in batch)
 
         with torch.no_grad():
-            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4], "labels_md": batch[5], "freq_ids": batch[6]}
-                        
+            inputs = {"input_ids": batch[0], "attention_mask": batch[1], "labels": batch[3], "labels_ctc": batch[4],
+                      "labels_md": batch[5], "freq_ids": batch[6]}
+
             if args.model_type != "distilbert":
                 inputs["token_type_ids"] = (
                     batch[2] if args.model_type in ["bert", "xlnet"] else None
@@ -298,7 +295,7 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
             if out_label_ids[i, j] != pad_token_label_id:
                 out_label_list[i].append(label_map[out_label_ids[i][j]])
                 preds_list[i].append(label_map[preds[i][j]])
-    
+
     results = {
         "precision": precision_score(out_label_list, preds_list),
         "recall": recall_score(out_label_list, preds_list),
@@ -318,7 +315,6 @@ def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""
     # for key in sorted(results.keys()):
     #     logger.info("  %s = %s", key, str(results[key]))
     ######################
-
 
     return results, preds_list
 
@@ -341,7 +337,7 @@ def load_and_cache_examples(args, tokenizer, labels, pad_token_label_id, mode, p
     else:
         # logger.info("Creating features from dataset file at %s", args.data_dir)
         examples = read_examples_from_file(args.data_dir, mode, path)
-        
+
         features = convert_examples_to_features(
             examples,
             labels,
@@ -376,12 +372,12 @@ def load_and_cache_examples(args, tokenizer, labels, pad_token_label_id, mode, p
     all_label_ids_ctc = torch.tensor([f.label_ids_ctc for f in features], dtype=torch.long)
     all_label_ids_md = torch.tensor([f.label_ids_md for f in features], dtype=torch.long)
 
-    dataset = TensorDataset(all_input_ids, all_input_mask, all_md_ids, all_label_ids, all_label_ids_ctc, all_label_ids_md, all_input_freq_ids)
+    dataset = TensorDataset(all_input_ids, all_input_mask, all_md_ids, all_label_ids, all_label_ids_ctc,
+                            all_label_ids_md, all_input_freq_ids)
     return dataset
 
 
 def parse_args():
-    #cwd = os.getcwd()
     cwd = '/content/drive/MyDrive/StackOverflowNER/StackOverflowNER/code/BERT_NER'
     parser = argparse.ArgumentParser()
 
@@ -397,12 +393,9 @@ def parse_args():
         type=str,
     )
 
-
-    
-
     parser.add_argument(
         "--data_dir",
-        default=os.path.join(cwd,'utils_fine_tune', 'ip_seg', ''),
+        default=os.path.join(cwd, 'utils_fine_tune', 'ip_seg', ''),
         type=str,
         help="The input data dir. Should contain the training files for the CoNLL-2003 NER task.",
     )
@@ -415,7 +408,6 @@ def parse_args():
     parser.add_argument(
         "--model_name_or_path",
         default=os.path.join(cwd, 'utils_fine_tune', 'word_piece_seg', ''),
-        # default=os.path.join('jeniya/BERTOverflow'),
         type=str,
         help="Path to pre-trained model or shortcut name selected in the list: " + ", ".join(ALL_MODELS),
     )
@@ -429,8 +421,7 @@ def parse_args():
     # Other parameters
     parser.add_argument(
         "--labels",
-        default=os.path.join(cwd, 'utils_fine_tune', 'labels_seg.txt'), # Changed from labels_seg.txt to labels_so.txt
-        # default=os.path.join(cwd, 'utils_fine_tune', 'labels_so.txt'), # Changed from labels_seg.txt to labels_so.txt
+        default=os.path.join(cwd, 'utils_fine_tune', 'labels_seg.txt'),
         type=str,
         help="Path to a file containing all labels. If not specified, CoNLL-2003 labels are used.",
     )
@@ -445,8 +436,6 @@ def parse_args():
     )
     parser.add_argument(
         "--cache_dir",
-        # default="/content/drive/MyDrive/StackOverflowNER/",
-        # default=os.path.join(cwd, 'utils_fine_tune', 'bert-word-piece-seg', ''),
         default="",
         type=str,
         help="Where do you want to store the pre-trained models downloaded from s3",
@@ -456,7 +445,7 @@ def parse_args():
         default=128,
         type=int,
         help="The maximum total input sequence length after tokenization. Sequences longer "
-        "than this will be truncated, sequences shorter will be padded.",
+             "than this will be truncated, sequences shorter will be padded.",
     )
     parser.add_argument("--do_train", action="store_true", help="Whether to run training.")
     parser.add_argument("--do_eval", action="store_true", help="Whether to run eval on the dev set.")
@@ -527,7 +516,7 @@ def parse_args():
         type=str,
         default="O1",
         help="For fp16: Apex AMP optimization level selected in ['O0', 'O1', 'O2', and 'O3']."
-        "See details at https://nvidia.github.io/apex/amp.html",
+             "See details at https://nvidia.github.io/apex/amp.html",
     )
     parser.add_argument("--local_rank", type=int, default=-1, help="For distributed training: local_rank")
     parser.add_argument("--server_ip", type=str, default="", help="For distant debugging.")
@@ -535,10 +524,10 @@ def parse_args():
     args, unknown = parser.parse_known_args()
 
     if (
-        os.path.exists(args.output_dir)
-        and os.listdir(args.output_dir)
-        and args.do_train
-        and not args.overwrite_output_dir
+            os.path.exists(args.output_dir)
+            and os.listdir(args.output_dir)
+            and args.do_train
+            and not args.overwrite_output_dir
     ):
         raise ValueError(
             "Output directory ({}) already exists and is not empty. Use --overwrite_output_dir to overcome.".format(
@@ -554,16 +543,11 @@ def parse_args():
         print("Waiting for debugger attach")
         ptvsd.enable_attach(address=(args.server_ip, args.server_port), redirect_output=True)
         ptvsd.wait_for_attach()
-    
-
 
     return args
 
 
-
-
-def predict_segments(input_file,output_prediction_file):
-    
+def predict_segments(input_file, output_prediction_file):
     args = parse_args()
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1 or args.no_cuda:
@@ -622,7 +606,8 @@ def predict_segments(input_file,output_prediction_file):
     #     cache_dir=args.cache_dir if args.cache_dir else None,
     #     **tokenizer_args,
     # )
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,cache_dir=args.cache_dir if args.cache_dir else None,**tokenizer_args)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path,
+                                              cache_dir=args.cache_dir if args.cache_dir else None, **tokenizer_args)
     model = AutoModelForTokenClassification_Seg.from_pretrained(
         args.model_name_or_path,
         from_tf=bool(".ckpt" in args.model_name_or_path),
@@ -637,16 +622,12 @@ def predict_segments(input_file,output_prediction_file):
 
     logger.info("Parameters %s", args)
 
-    
-
-    
     tokenizer = AutoTokenizer.from_pretrained(args.output_dir, **tokenizer_args)
     model = AutoModelForTokenClassification_Seg.from_pretrained(args.output_dir)
     model.to(args.device)
 
-    
     result, predictions = evaluate(args, model, tokenizer, labels, pad_token_label_id, mode="", path=input_file)
-    output_test_results_file =  "temp_results.txt"
+    output_test_results_file = "temp_results.txt"
     with open(output_test_results_file, "w") as writer:
         for key in sorted(result.keys()):
             writer.write("{} = {}\n".format(key, str(result[key])))
@@ -667,23 +648,16 @@ def predict_segments(input_file,output_prediction_file):
                     # logger.warning("Maximum sequence length exceeded: No prediction for '%s'.", line.split()[0])
                     continue
 
-
     # print("\n\n")
     # print("-------------------------------------------------------------------------------------------------")
     # print("***** Perdictions on sentences in ", input_file, " is stored at ", output_prediction_file,"*****" )
     # print("-------------------------------------------------------------------------------------------------")
     # print("\n\n")
 
-    
-
-
-
-       
-
 
 if __name__ == "__main__":
     args = parse_args()
-    input_file=args.input_file_for_segmenter
-    output_prediction_file=args.output_file_for_segmenter
+    input_file = args.input_file_for_segmenter
+    output_prediction_file = args.output_file_for_segmenter
 
     predict_segments(input_file, output_prediction_file)
